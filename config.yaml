@@ -1,0 +1,20 @@
+data:
+  output_dir: "data_raw"
+
+stocks:
+  tickers:
+    - AAPL
+    - TSLA
+    - MSFT
+  interval: "1d"
+
+crypto:
+  tickers:
+    - BTC
+    - ETH
+  vs_currency: "usd"
+
+extract:
+  default_start: "2020-01-01"
+  default_end: "2024-12-31"
+  threads: 4
