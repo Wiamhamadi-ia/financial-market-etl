@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 
+from src.config import SMA_WINDOWS, VOLATILITY_WINDOW, TRADING_DAYS_PER_YEAR
+
 
 def transform_stock_data(data: pd.DataFrame) -> pd.DataFrame:
     """
@@ -13,13 +15,14 @@ def transform_stock_data(data: pd.DataFrame) -> pd.DataFrame:
     try:
         df = data.copy()
 
-        # Reset index
+        # Reset index to convert Date from index to column
         df.reset_index(inplace=True)
 
-        # Handle MultiIndex columns (from yfinance)
+        # Handle MultiIndex columns from yfinance
         if isinstance(df.columns, pd.MultiIndex):
-              df.columns = [col[0] for col in df.columns]
+            df.columns = [col[0] for col in df.columns]
 
+        # Standardize column names
         df.columns = [col.lower() for col in df.columns]
 
         # Remove missing values
@@ -28,31 +31,29 @@ def transform_stock_data(data: pd.DataFrame) -> pd.DataFrame:
         # =========================
         # RETURNS
         # =========================
-
         df["daily_return"] = df["close"].pct_change()
         df["log_return"] = np.log(df["close"] / df["close"].shift(1))
 
         # =========================
-        # MOVING AVERAGES
+        # MOVING AVERAGES (DYNAMIC)
         # =========================
-
-        df["sma_20"] = df["close"].rolling(20).mean()
-        df["sma_50"] = df["close"].rolling(50).mean()
-        df["sma_200"] = df["close"].rolling(200).mean()
+        for window in SMA_WINDOWS:
+            df[f"sma_{window}"] = df["close"].rolling(window=window).mean()
 
         # =========================
-        # VOLATILITY
+        # VOLATILITY (DYNAMIC)
         # =========================
+        df[f"volatility_{VOLATILITY_WINDOW}"] = (
+            df["daily_return"].rolling(VOLATILITY_WINDOW).std()
+        )
 
-        df["volatility_20"] = df["daily_return"].rolling(20).std()
-
-        # Annualized volatility (252 trading days)
-        df["volatility_annual"] = df["volatility_20"] * np.sqrt(252)
+        df["volatility_annual"] = (
+            df[f"volatility_{VOLATILITY_WINDOW}"] * np.sqrt(TRADING_DAYS_PER_YEAR)
+        )
 
         # =========================
         # DRAWDOWN
         # =========================
-
         df["cumulative_return"] = (1 + df["daily_return"]).cumprod()
         df["rolling_max"] = df["cumulative_return"].cummax()
         df["drawdown"] = (
@@ -61,7 +62,7 @@ def transform_stock_data(data: pd.DataFrame) -> pd.DataFrame:
 
         df["max_drawdown"] = df["drawdown"].cummin()
 
-        logging.info("Quantitative transformation completed")
+        logging.info("Quantitative transformation completed successfully")
 
         return df
 

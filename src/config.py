@@ -1,0 +1,13 @@
+# src/config.py
+
+TICKER = "AAPL"
+START_DATE = "2023-01-01"
+END_DATE = "2024-01-01"
+
+RAW_DATA_DIR = "data/raw"
+PROCESSED_DATA_DIR = "data/processed"
+LOG_DIR = "logs"
+
+SMA_WINDOWS = [20, 50, 200]
+VOLATILITY_WINDOW = 20
+TRADING_DAYS_PER_YEAR = 252
