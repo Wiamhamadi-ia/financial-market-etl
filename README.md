@@ -1,45 +1,64 @@
-# 📈 Financial Market ETL Pipeline
+# Financial Market ETL Pipeline
 
-## 🎯 Project Objective
+A professional end-to-end ETL pipeline for extracting, transforming, and loading historical stock market data using Python.
 
-Build a professional ETL pipeline that extracts, transforms, and loads financial market data from:
-
-- 📊 Yahoo Finance (stocks & indices)
-- 🪙 CoinGecko (cryptocurrencies)
+This project is designed as a portfolio-ready data engineering and financial analytics project, with a modular architecture, configurable parameters, logging, and quantitative indicators commonly used in market analysis.
 
 ---
 
-## 🏗 Architecture
+## Project Overview
 
-EXTRACT → TRANSFORM → LOAD
+The goal of this project is to build a structured ETL pipeline that:
 
----
+- Extracts historical stock market data from Yahoo Finance
+- Saves raw market data snapshots
+- Cleans and transforms the data
+- Computes key quantitative financial indicators
+- Saves processed data for downstream analysis, dashboards, or machine learning models
 
-## 🛠 Technologies Used
-
-- Python
-- Pandas
-- yfinance
-- CoinGecko API
-- SQLite / PostgreSQL
-- Git & GitHub
+This project demonstrates good software engineering and data engineering practices for financial data workflows.
 
 ---
 
-## 📂 Project Structure
+## Features
 
+- Modular ETL architecture (`extract`, `transform`, `load`)
+- Centralized configuration via `config.py`
+- Logging to both console and file
+- Raw and processed data separation
+- Quantitative financial indicators:
+  - Daily return
+  - Log return
+  - Simple Moving Averages (SMA 20, 50, 200)
+  - Rolling volatility
+  - Annualized volatility
+  - Cumulative return
+  - Drawdown
+  - Maximum drawdown
+- GitHub-ready project structure
+
+---
+
+## Project Structure
+
+```bash
 financial-market-etl/
 │
-├── scripts/
-├── data_raw/
-├── data_clean/
-├── db/
-├── config.yaml
+├── main.py
 ├── requirements.txt
-└── README.md
-
----
-
-## 🚀 Status
-
-🚧 In progress – building extraction module
+├── README.md
+├── .gitignore
+│
+├── src/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── extract.py
+│   ├── transform.py
+│   ├── load.py
+│   └── logger.py
+│
+├── data/
+│   ├── raw/
+│   └── processed/
+│
+└── logs/
