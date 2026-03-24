@@ -1,71 +1,67 @@
-import pandas as pd
 import numpy as np
-import logging
+import pandas as pd
 
+from src.logger import setup_logger
 from src.config import SMA_WINDOWS, VOLATILITY_WINDOW, TRADING_DAYS_PER_YEAR
+from src.utils import (
+    validate_dataframe_not_empty,
+    validate_required_columns,
+    convert_date_column,
+    sort_by_date,
+    handle_missing_values
+)
+
+logger = setup_logger()
 
 
-def transform_stock_data(data: pd.DataFrame) -> pd.DataFrame:
+def transform_market_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Clean and enrich stock data with quantitative indicators.
+    Clean and transform market data by computing key financial indicators.
     """
-
-    logging.info("Starting quantitative transformation")
+    logger.info("Starting data transformation...")
 
     try:
-        df = data.copy()
+        validate_dataframe_not_empty(df, context="Input market data")
 
-        # Reset index to convert Date from index to column
-        df.reset_index(inplace=True)
+        required_columns = ["Date", "Open", "High", "Low", "Close", "Volume", "Ticker"]
+        validate_required_columns(df, required_columns, context="Market data")
 
-        # Handle MultiIndex columns from yfinance
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = [col[0] for col in df.columns]
+        df = df.copy()
 
-        # Standardize column names
-        df.columns = [col.lower() for col in df.columns]
+        # Standardize and sort
+        df = convert_date_column(df, "Date")
+        df = sort_by_date(df, "Date")
+        df = handle_missing_values(df)
 
-        # Remove missing values
-        df.dropna(inplace=True)
+        # Daily return
+        df["Daily Return"] = df["Close"].pct_change()
 
-        # =========================
-        # RETURNS
-        # =========================
-        df["daily_return"] = df["close"].pct_change()
-        df["log_return"] = np.log(df["close"] / df["close"].shift(1))
+        # Log return
+        df["Log Return"] = np.log(df["Close"] / df["Close"].shift(1))
 
-        # =========================
-        # MOVING AVERAGES (DYNAMIC)
-        # =========================
+        # Simple Moving Averages
         for window in SMA_WINDOWS:
-            df[f"sma_{window}"] = df["close"].rolling(window=window).mean()
+            df[f"SMA_{window}"] = df["Close"].rolling(window=window).mean()
 
-        # =========================
-        # VOLATILITY (DYNAMIC)
-        # =========================
-        df[f"volatility_{VOLATILITY_WINDOW}"] = (
-            df["daily_return"].rolling(VOLATILITY_WINDOW).std()
-        )
+        # Rolling volatility
+        df["Rolling Volatility"] = df["Daily Return"].rolling(window=VOLATILITY_WINDOW).std()
 
-        df["volatility_annual"] = (
-            df[f"volatility_{VOLATILITY_WINDOW}"] * np.sqrt(TRADING_DAYS_PER_YEAR)
-        )
+        # Annualized volatility
+        df["Annualized Volatility"] = df["Rolling Volatility"] * np.sqrt(TRADING_DAYS_PER_YEAR)
 
-        # =========================
-        # DRAWDOWN
-        # =========================
-        df["cumulative_return"] = (1 + df["daily_return"]).cumprod()
-        df["rolling_max"] = df["cumulative_return"].cummax()
-        df["drawdown"] = (
-            df["cumulative_return"] - df["rolling_max"]
-        ) / df["rolling_max"]
+        # Cumulative return
+        df["Cumulative Return"] = (1 + df["Daily Return"]).cumprod() - 1
 
-        df["max_drawdown"] = df["drawdown"].cummin()
+        # Drawdown
+        df["Running Max"] = df["Close"].cummax()
+        df["Drawdown"] = (df["Close"] - df["Running Max"]) / df["Running Max"]
 
-        logging.info("Quantitative transformation completed successfully")
+        # Maximum drawdown (expanding minimum drawdown)
+        df["Max Drawdown"] = df["Drawdown"].cummin()
 
+        logger.info("Transformation completed successfully.")
         return df
 
     except Exception as e:
-        logging.error(f"Transformation failed: {e}")
+        logger.error(f"Error during transformation: {e}")
         raise

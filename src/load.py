@@ -1,28 +1,20 @@
-import os
+from pathlib import Path
 import pandas as pd
-import logging
-from datetime import datetime
+
+from src.logger import setup_logger
+from src.utils import ensure_directory
+
+logger = setup_logger()
 
 
-def save_processed_data(data: pd.DataFrame, ticker: str) -> str:
+def save_to_csv(df: pd.DataFrame, output_path: Path) -> None:
     """
-    Save processed stock data to CSV in data/processed directory.
-    Returns the output file path.
+    Save DataFrame to CSV.
     """
-
-    logging.info(f"Saving processed data for {ticker}")
-
     try:
-        os.makedirs("data/processed", exist_ok=True)
-
-        today = datetime.today().strftime("%Y-%m-%d")
-        filename = f"data/processed/{ticker}_processed_{today}.csv"
-
-        data.to_csv(filename, index=False)
-
-        logging.info(f"Processed data saved successfully to {filename}")
-        return filename
-
+        ensure_directory(output_path.parent)
+        df.to_csv(output_path, index=False)
+        logger.info(f"File saved successfully: {output_path}")
     except Exception as e:
-        logging.error(f"Failed to save processed data: {e}")
+        logger.error(f"Error saving file to {output_path}: {e}")
         raise
