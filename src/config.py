@@ -8,6 +8,7 @@ DATA_DIR = BASE_DIR / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 LOG_DIR = BASE_DIR / "logs"
+FIGURES_DIR = BASE_DIR / "reports" / "figures"
 
 # =========================
 # Market data configuration
