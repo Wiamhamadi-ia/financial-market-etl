@@ -10,7 +10,7 @@ def main():
     """
     Run the reporting pipeline on all processed market data files.
     """
-    project_root = Path(__file__).resolve().parents[1]
+    project_root =  Path(__file__).resolve().parent
 
     input_dir = project_root / "data" / "processed"
     output_dir = project_root / "reports" / "summary"

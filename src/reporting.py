@@ -18,9 +18,9 @@ REQUIRED_COLUMNS = [
     "Date",
     "Ticker",
     "Close",
-    "Daily_Return",
-    "Volatility",
-    "RSI",
+    "Daily Return",
+    "Rolling Volatility",
+    
 ]
 
 
@@ -83,22 +83,18 @@ def generate_ticker_summary(df: pd.DataFrame) -> pd.DataFrame:
             "Std_Close": ticker_df["Close"].std(),
 
             # Return metrics
-            "Mean_Daily_Return": ticker_df["Daily_Return"].mean(),
-            "Median_Daily_Return": ticker_df["Daily_Return"].median(),
-            "Std_Daily_Return": ticker_df["Daily_Return"].std(),
-            "Min_Daily_Return": ticker_df["Daily_Return"].min(),
-            "Max_Daily_Return": ticker_df["Daily_Return"].max(),
+            "Mean_Daily_Return": ticker_df["Daily Return"].mean(),
+            "Median_Daily_Return": ticker_df["Daily Return"].median(),
+            "Std_Daily_Return": ticker_df["Daily Return"].std(),
+            "Min_Daily_Return": ticker_df["Daily Return"].min(),
+            "Max_Daily_Return": ticker_df["Daily Return"].max(),
 
             # Volatility metrics
-            "Mean_Volatility": ticker_df["Volatility"].mean(),
-            "Max_Volatility": ticker_df["Volatility"].max(),
-            "Latest_Volatility": last_row["Volatility"],
+            "Mean_Volatility": ticker_df["Rolling Volatility"].mean(),
+            "Max_Volatility": ticker_df["Rolling Volatility"].max(),
+            "Latest_Volatility": last_row["Rolling Volatility"],
 
-            # RSI metrics
-            "Mean_RSI": ticker_df["RSI"].mean(),
-            "Min_RSI": ticker_df["RSI"].min(),
-            "Max_RSI": ticker_df["RSI"].max(),
-            "Latest_RSI": last_row["RSI"],
+            
 
             # Trend / performance
             "Absolute_Price_Change": last_row["Close"] - first_row["Close"],
@@ -107,25 +103,21 @@ def generate_ticker_summary(df: pd.DataFrame) -> pd.DataFrame:
         }
 
         # Optional moving averages if available
-        for sma_col in ["SMA_10", "SMA_20", "SMA_50"]:
+        for sma_col in ["SMA_20", "SMA_50", "SMA_200"]:
             if sma_col in ticker_df.columns:
                 summary[f"Latest_{sma_col}"] = last_row[sma_col]
 
+       
         # Optional signals
-        if "SMA_10" in ticker_df.columns and "SMA_50" in ticker_df.columns:
-            summary["Trend_Signal"] = (
-                "Bullish" if last_row["SMA_10"] > last_row["SMA_50"] else "Bearish"
-            )
-
-        if pd.notna(last_row["RSI"]):
-            if last_row["RSI"] > 70:
-                summary["RSI_Signal"] = "Overbought"
-            elif last_row["RSI"] < 30:
-                summary["RSI_Signal"] = "Oversold"
+        if "SMA_20" in ticker_df.columns and "SMA_50" in ticker_df.columns:
+            if last_row["SMA_20"] > last_row["SMA_50"]:
+                summary["Trend_Signal"] = "Bullish"
+            elif last_row["SMA_20"] < last_row["SMA_50"]:
+                summary["Trend_Signal"] = "Bearish"
             else:
-                summary["RSI_Signal"] = "Neutral"
-        else:
-            summary["RSI_Signal"] = None
+                summary["Trend_Signal"] = "Neutral"
+
+       
 
         summary_rows.append(summary)
 

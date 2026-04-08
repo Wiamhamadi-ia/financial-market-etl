@@ -19,8 +19,8 @@ def load_processed_data(file_path: str | Path) -> pd.DataFrame:
 
         validate_dataframe_not_empty(df, "Processed data")
 
-        if "date" in df.columns:
-            df["date"] = pd.to_datetime(df["date"])
+        if "Date" in df.columns:
+            df["Date"] = pd.to_datetime(df["Date"])
 
         logger.info(f"Processed data loaded successfully from {file_path}")
         return df
@@ -51,12 +51,12 @@ def plot_close_price(df: pd.DataFrame, ticker: str):
     """
     Plot closing price over time.
     """
-    validate_required_columns(df, ["date", "close"])
+    validate_required_columns(df, ["Date", "Close"])
 
     _prepare_output_dir()
 
     plt.figure(figsize=(12, 6))
-    plt.plot(df["date"], df["close"])
+    plt.plot(df["Date"], df["Close"])
     plt.title(f"{ticker} - Closing Price")
     plt.xlabel("Date")
     plt.ylabel("Close Price")
@@ -70,12 +70,12 @@ def plot_returns(df: pd.DataFrame, ticker: str):
     """
     Plot daily returns over time.
     """
-    validate_required_columns(df, ["date", "daily_return"])
+    validate_required_columns(df, ["Date", "Daily Return"])
 
     _prepare_output_dir()
 
     plt.figure(figsize=(12, 6))
-    plt.plot(df["date"], df["daily_return"])
+    plt.plot(df["Date"], df["Daily Return"])
     plt.title(f"{ticker} - Daily Returns")
     plt.xlabel("Date")
     plt.ylabel("Daily Return")
@@ -89,15 +89,15 @@ def plot_moving_averages(df: pd.DataFrame, ticker: str):
     """
     Plot close price with moving averages.
     """
-    validate_required_columns(df, ["date", "close", "sma_10", "sma_20", "sma_50"])
+    validate_required_columns(df, ["Date", "Close", "SMA_20", "SMA_50", "SMA_200"])
 
     _prepare_output_dir()
 
     plt.figure(figsize=(12, 6))
-    plt.plot(df["date"], df["close"], label="Close")
-    plt.plot(df["date"], df["sma_10"], label="SMA 10")
-    plt.plot(df["date"], df["sma_20"], label="SMA 20")
-    plt.plot(df["date"], df["sma_50"], label="SMA 50")
+    plt.plot(df["Date"], df["Close"], label="Close")
+    plt.plot(df["Date"], df["SMA_20"], label="SMA 20")
+    plt.plot(df["Date"], df["SMA_50"], label="SMA 50")
+    plt.plot(df["Date"], df["SMA_200"], label="SMA 200")
 
     plt.title(f"{ticker} - Close Price & Moving Averages")
     plt.xlabel("Date")
@@ -113,42 +113,21 @@ def plot_volatility(df: pd.DataFrame, ticker: str):
     """
     Plot rolling volatility over time.
     """
-    validate_required_columns(df, ["date", "volatility_20"])
+    validate_required_columns(df, ["Date", "Rolling Volatility"])
 
     _prepare_output_dir()
 
     plt.figure(figsize=(12, 6))
-    plt.plot(df["date"], df["volatility_20"])
+    plt.plot(df["Date"], df["Rolling Volatility"])
     plt.title(f"{ticker} - 20-Day Rolling Volatility")
     plt.xlabel("Date")
     plt.ylabel("Volatility")
     plt.grid(True)
 
-    output_path = FIGURES_DIR / f"{ticker}_volatility_20.png"
+    output_path = FIGURES_DIR / f"{ticker}_Rolling_Volatility.png"
     _save_plot(output_path)
 
 
-def plot_rsi(df: pd.DataFrame, ticker: str):
-    """
-    Plot RSI indicator over time.
-    """
-    validate_required_columns(df, ["date", "rsi_14"])
-
-    _prepare_output_dir()
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(df["date"], df["rsi_14"], label="RSI 14")
-    plt.axhline(70, linestyle="--", label="Overbought (70)")
-    plt.axhline(30, linestyle="--", label="Oversold (30)")
-
-    plt.title(f"{ticker} - RSI (14)")
-    plt.xlabel("Date")
-    plt.ylabel("RSI")
-    plt.legend()
-    plt.grid(True)
-
-    output_path = FIGURES_DIR / f"{ticker}_rsi_14.png"
-    _save_plot(output_path)
 
 
 def generate_all_charts_for_ticker(file_path: str | Path, ticker: str):
@@ -163,6 +142,6 @@ def generate_all_charts_for_ticker(file_path: str | Path, ticker: str):
     plot_returns(df, ticker)
     plot_moving_averages(df, ticker)
     plot_volatility(df, ticker)
-    plot_rsi(df, ticker)
+   
 
     logger.info(f"All charts generated successfully for {ticker}")
